@@ -39,53 +39,25 @@ public class Player{
         //allTime = new AtomicLong(0);
     }
 
-    /* methods for updating and accessing number of current viewers */
-    //public void gainOneViewer(){
-    //    numViewers++;
-    //}
-    //public void loseOneViewer(){
-    //   numViewers--;
-    //}
-    //public int getNumViewers() {
-    //    return numViewers;
-    //}
-
     //thread safe option
     public int getNumViewers(){
         return numViewers.get();
     }
 
     public void gainOneViewer(){
-        while(true){
-            int existingValue = getNumViewers();
-            int newValue = existingValue + 1;
-            if(numViewers.compareAndSet(existingValue, newValue)){
-                return;
-            }
-        }
+        numViewers.incrementAndGet();
     }
 
     public void loseOneViewer(){
-        while(true){
-            int existingValue = getNumViewers();
-            int newValue = existingValue - 1;
-            if(numViewers.compareAndSet(existingValue, newValue)){
-                return;
-            }
-        }
+        numViewers.decrementAndGet();
     }
 
     /* method for processing donation from a Viewer into Player records */
-    public void addDonation(Donation donation){
-        //this.numOfDonations++;
-        //thread safe option
-        while(true){
-            int existingValue = this.getNumOfDonations();
-            int newValue = existingValue + 1;
-            if(this.numOfDonations.compareAndSet(existingValue, newValue)){
-                break;
-            }
-        }
+    public synchronized void addDonation(Donation donation){
+        // Increment count of donations
+        numOfDonations.incrementAndGet();
+
+        // Add value to sum of donations
         this.sumOfDonations += donation.getAmount();
         Viewer donor = donation.getViewer();
         if(donationsFromViewers.containsKey(donor)){
@@ -97,7 +69,7 @@ public class Player{
     }
 
     /* method to get total of all donations in Players record of donations */
-    public double sumDonations(){
+    public synchronized double sumDonations(){
         int sum = 0;
         for(Double v: donationsFromViewers.values()){
             sum += v;
@@ -146,13 +118,4 @@ public class Player{
             }
         }
     }
-
-    // class-level methods to access and increase grand total of all viewing time  for all Players */
-    //public static long getAllTime() {
-    //    return allTime;
-    //}
-    //public static void addToAllTime(long allTime) {
-    //    Player.allTime += allTime;
-    //}
-
 }
